@@ -1,0 +1,10 @@
+# Python virtual environment
+venv_csv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment files
+.env
