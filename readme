@@ -1,83 +1,3 @@
-Employee CSV RAG Chatbot - README
-
-A Retrieval-Augmented Generation (RAG) based chatbot that allows querying an Employee dataset (CSV/DB).
-You can ask natural language questions like:
-
-- "Give me all details of Paula Small"
-- "What is the EmpID and DOB of Latia Costa and Paula Small?"
-- "Show the department of Milton Wall"
-
-The system retrieves relevant rows from the employee dataset, extracts structured details, and presents them in clean tabular format.
-
----
-
-## 🚀 Features
-- Query employees by name or employee ID  
-- Retrieve single or multiple employees at once  
-- Supports "all details" queries or specific fields like DOB, Department, EmpID etc.  
-- Outputs answers in markdown tables for easy readability  
-- Built on RAG (Retrieval-Augmented Generation) workflow  
-
----
-
-## 🛠️ Tech Stack
-- Python 3.10+
-- ChromaDB → vector storage  
-- Sentence Transformers / Embedding model → semantic search  
-- LangChain (or custom RAG pipeline) → query processing  
-- Tabulate / Markdown formatting → clean tables  
-- LLM (Ollama / OpenAI / HuggingFace) → answer generation  
-
----
-
-## 📂 Project Structure
-employee-rag-chatbot/
-│── data/                     # Employee CSV / DB files
-│── main.py                   # Entry point for chatbot
-│── rag_query.py              # RAG pipeline functions
-│── utils.py                  # Helper functions (table formatter, column extraction etc.)
-│── parse_question.py          # Logic for parsing user queries
-│── requirements.txt           # Python dependencies
-│── README.md                  # Project documentation
-│── .gitignore                 # Ignore venv, cache, db
-
----
-
-## 🔧 Installation
-Clone this repository and install dependencies:
-git clone https://github.com/YOUR-USERNAME/employee-rag-chatbot.git
-cd employee-rag-chatbot
-pip install -r requirements.txt
-
----
-
-## ▶️ Usage
-Run the chatbot:
-python main.py
-
-Example Queries:
-- all details of Paula Small
-- dob, empid of Latia Costa and Paula Small
-- department of Milton Wall
-
-Expected Output (formatted table):
-## Employee Paula Small
-| Column        | Value       |
-|---------------|-------------|
-| EmpID         | 3428        |
-| Date of Birth | 30-08-1965  |
-| Gender        | Female      |
-| Race          | White       |
-
----
-
-## ⚡ Future Improvements
-- Web-based UI (Streamlit / FastAPI)  
-- Authentication layer for secure queries  
-- Advanced query parsing with LLMs  
-- Support for multiple datasets (HR, Finance, etc.)  
-
----
 
 
 
@@ -89,66 +9,90 @@ Expected Output (formatted table):
 
 
 
-
-
-
-
-
-
-
-
-
-#WHY MODEL GIVE FAST ANSWER 
-Simplified Explanation
-
-Think of your RAG process like asking a smart assistant to look in a big file cabinet and then answer your question.
-
-Old way (slow):
-
-You asked for “name, start date, and manager of employee 3507.”
-
-The assistant read the whole file and asked itself multiple questions:
-
-“What’s the name?” → LLM answers
-
-“What’s the start date?” → LLM answers
-
-“What’s the manager?” → LLM answers
-
-Every small question was processed separately → slow.
-
-Current way (fast):
-
-You ask the same question.
-
-The assistant opens the file once and looks for the requested info directly.
-
-Then it asks the LLM just once to format the answer nicely as a table.
-
-Fewer steps → much faster.
-
-Example
-
-Suppose your employee data in the database says:
-
-EmpID: 3507
-FirstName: Ivan
-LastName: Huff
-StartDate: 25-Feb-21
-Supervisor: John Miller
-
-
-Old code: LLM was asked 3 separate times: “What’s FirstName?”, “What’s StartDate?”, “Who is the Supervisor?” → takes longer.
-
-New code: The program directly reads FirstName, StartDate, Supervisor from the retrieved data, then calls LLM once to create a table.
-
-Result: You get the table much faster, but the information still comes from the RAG process (the retrieved database document).
-
-In short:
-
-Old way: LLM does more work → slower.
-
-New way: LLM mostly formats → faster, but still uses the database retrieval (RAG).
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    COMPLETE RAG FLOW (CORRECT VERSION)                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                      │    │
+│  │  ╔═══════════════════════════════════════════════════════════════╗  │    │
+│  │  ║               INDEXING PHASE (One-time)                        ║  │    │
+│  │  ╚═══════════════════════════════════════════════════════════════╝  │    │
+│  │                                                                      │    │
+│  │   CSV Data                                                           │    │
+│  │      │                                                               │    │
+│  │      ▼                                                               │    │
+│  │   ┌──────────┐                                                       │    │
+│  │   │ CHUNKING │ → Split into meaningful pieces                       │    │
+│  │   └──────────┘   (each employee = 1 chunk)                          │    │
+│  │      │                                                               │    │
+│  │      ▼                                                               │    │
+│  │   ┌───────────────────┐                                              │    │
+│  │   │ EMBEDDING MODEL   │ → Convert ENTIRE chunk to ONE vector        │    │
+│  │   │ (HuggingFace)     │   (NOT word by word!)                       │    │
+│  │   └───────────────────┘                                              │    │
+│  │      │                                                               │    │
+│  │      ▼                                                               │    │
+│  │   ┌──────────────────┐                                               │    │
+│  │   │ VECTOR DATABASE  │ → Store vectors + text + metadata            │    │
+│  │   │ (ChromaDB)       │   Build search index (HNSW)                  │    │
+│  │   └──────────────────┘                                               │    │
+│  │                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                      │    │
+│  │  ╔═══════════════════════════════════════════════════════════════╗  │    │
+│  │  ║               QUERY PHASE (Every question)                     ║  │    │
+│  │  ╚═══════════════════════════════════════════════════════════════╝  │    │
+│  │                                                                      │    │
+│  │   User Question: "Who works in Sales?"                               │    │
+│  │      │                                                               │    │
+│  │      │   ❌ NOT sent to LLM first!                                   │    │
+│  │      │                                                               │    │
+│  │      ▼                                                               │    │
+│  │   ┌───────────────────┐                                              │    │
+│  │   │ EMBEDDING MODEL   │ → SAME model as indexing                    │    │
+│  │   │ (HuggingFace)     │   Query → Vector                            │    │
+│  │   └───────────────────┘                                              │    │
+│  │      │                                                               │    │
+│  │      ▼                                                               │    │
+│  │   ┌──────────────────────────────────────────────────────────────┐  │    │
+│  │   │ RETRIEVAL (Similarity Search)                                 │  │    │
+│  │   │                                                               │  │    │
+│  │   │ Retrieval Policy:                                             │  │    │
+│  │   │ ├── Similarity Metric: Cosine Similarity                     │  │    │
+│  │   │ ├── Search Algorithm: HNSW (approximate nearest neighbor)    │  │    │
+│  │   │ ├── Top-K: Return 10 most similar                            │  │    │
+│  │   │ └── (Optional) Score threshold, MMR for diversity            │  │    │
+│  │   │                                                               │  │    │
+│  │   │ Returns: Top-10 most relevant employee records               │  │    │
+│  │   └──────────────────────────────────────────────────────────────┘  │    │
+│  │      │                                                               │    │
+│  │      ▼                                                               │    │
+│  │   ┌──────────────────────────────────────────────────────────────┐  │    │
+│  │   │ LLM (ONLY NOW!)                                               │  │    │
+│  │   │                                                               │  │    │
+│  │   │ Receives:                                                     │  │    │
+│  │   │ ├── System prompt (instructions)                             │  │    │
+│  │   │ ├── Retrieved documents (context)                            │  │    │
+│  │   │ └── User question                                            │  │    │
+│  │   │                                                               │  │    │
+│  │   │ Does:                                                         │  │    │
+│  │   │ ├── Understands context (Transformer attention)              │  │    │
+│  │   │ ├── Extracts relevant information                            │  │    │
+│  │   │ ├── Summarizes in friendly way                               │  │    │
+│  │   │ └── Generates readable response                              │  │    │
+│  │   │                                                               │  │    │
+│  │   │ Output: Natural language answer                              │  │    │
+│  │   └──────────────────────────────────────────────────────────────┘  │    │
+│  │      │                                                               │    │
+│  │      ▼                                                               │    │
+│  │   "The following employees work in Sales: John Smith, Alice..."     │    │
+│  │                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 
 
 
