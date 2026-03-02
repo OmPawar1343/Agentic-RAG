@@ -1,10 +1,17 @@
-# Python virtual environment
-venv_csv/
-
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Environment files
+# Environment variables (NEVER commit!)
 .env
+.env.local
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Database
+db/
+*.db
+
+# Logs
+*.log
+logs/
